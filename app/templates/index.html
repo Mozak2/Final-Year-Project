@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Assistant</title>
+</head>
+<body>
+    <h1>Coding Assistant</h1>
+    <form action="/" method="post">
+        {% for question, _ in questions.items() %}
+        <label>
+            <input type="radio" name="selected_option" value="{{ loop.index }}">
+            {{ question }}
+        </label>
+        <br>
+        {% endfor %}
+        <button type="submit">Generate Code</button>
+    </form>
+    {% if generated_code %}
+    <h2>Generated Code:</h2>
+    <pre>{{ generated_code }}</pre>
+    {% endif %}
+</body>
+</html>
