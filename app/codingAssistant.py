@@ -28,23 +28,6 @@ class CodingAssistant:
             return "Invalid option selected."
 
         # Include similar conditions for other types of CNN projects
-
-    # def customise_image_classification_param(self):
-    #     # Assuming no need for dynamic responses collection for now
-    #     # Prompt user for image size
-    #     image_size = input("Enter image size (e.g., 128 for 128x128 pixels): ")
-    #     # Ask user if they want dataset suggestions
-    #     suggest_dataset = input("Do you need a suggestion for a dataset? (yes/no): ").lower()
-    #     # Ask user if they want to use data augmentation
-    #     use_data_augmentation = input("Would you like to use data augmentation? (yes/no): ").lower()
-    #     # Ask user the number of classes/categories they want
-    #     num_classes = input("How many Classes would you like? (how many categories for final layer of CNN. e.g. 10 ): ")
-    #
-    #
-    #     # Collect responses
-    #     responses = [image_size, suggest_dataset, use_data_augmentation, num_classes]
-    #     self.generate_image_classification_cnn(responses)
-
     def get_valid_input(self, prompt, validation_func, error_message="Invalid answer. Please try again."):
         while True:
             user_input = input(prompt)
