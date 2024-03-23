@@ -11,6 +11,7 @@ from tensorflow.keras.datasets import cifar10
 from tensorflow.keras import layers, models
 from flask import Flask, render_template, request
 
+
 class CodingAssistant:
     def __init__(self):
         self.question_repo = QuestionRepository()
@@ -18,24 +19,12 @@ class CodingAssistant:
     def start_interaction(self):
         general_questions = self.question_repo.get_general_questions()
         print("Please select an option:")
-        for idx, question in enumerate(general_questions, 1):
-            print(f"{idx}. {question}")
-        choice = int(input("Enter the number of your choice: "))  # Capture the user's choice
-        # print(f"Choice: {choice}, Type: {type(choice)}")
-        self.generate_code_based_on_choice(choice)  # Adjusted to call the method with the correct index
+        start = self.get_valid_input("Would you like to get started? (y/n): ",
+                                                 lambda x: x.lower() in ['y', 'n'])
+        if start == 'y':
+            self.customise_image_classification_param();
 
-    def generate_code_based_on_choice(self, choice):
-        # print(f"Choice: {choice}, Type: {type(choice)}")
-        if choice == 1:  # Assuming 1 corresponds to image classification, for example
-            self.customise_image_classification_param()
-        elif choice == 2:
-            return self.generate_object_detection_cnn()
-        elif choice == 3:
-            return self.generate_facial_recognition_cnn()
-        else:
-            return "Invalid option selected."
 
-        # Include similar conditions for other types of CNN projects
     def get_valid_input(self, prompt, validation_func, error_message="Invalid answer. Please try again."):
         while True:
             user_input = input(prompt)
@@ -46,9 +35,17 @@ class CodingAssistant:
     def customise_image_classification_param(self):
 
         hyperparam_tuning = self.get_valid_input("Would you like your hyperparameters to be tuned? (y/n): ",
-                                                     lambda x: x.lower() in ['y', 'n'])
+                                                 lambda x: x.lower() in ['y', 'n'])
         if hyperparam_tuning == 'y':
-            self.objective()
+            def objective_wrapper(trial):
+                return self.objective(trial)  # Ensure this method accepts a trial and operates correctly with it
+
+            study = optuna.create_study(direction='maximize')
+            study.optimize(objective_wrapper, n_trials=10)  # Adjust n_trials as needed
+
+            # Now, you can access the best trial results
+            best_params = study.best_trial.params
+            print("Best hyperparameters found:", best_params)
 
         image_size = self.get_valid_input("Enter image size (e.g., 128 for 128x128 pixels): ",
                                           lambda x: x.isdigit() and int(x) > 0)
@@ -62,20 +59,65 @@ class CodingAssistant:
         num_classes = self.get_valid_input("How many classes would you like? (e.g., 10): ",
                                            lambda x: x.isdigit() and int(x) > 0)
         # Prompt user for the path to their dataset
-        dataset_path = self.get_valid_input("Enter the path to your dataset (including 'Dataset =') or leave blank if not applicable): ",
-                                            lambda x: True)  # Validation allows any input, including blank for flexibility
-        responses = [int(image_size), suggest_dataset.lower(), use_data_augmentation.lower(), int(num_classes), dataset_path]
+        dataset_path = self.get_valid_input(
+            "Enter the path to your dataset (including 'Dataset =') or leave blank if not applicable): ",
+            lambda x: True)  # Validation allows any input, including blank for flexibility
+        responses = [int(image_size), suggest_dataset.lower(), use_data_augmentation.lower(), int(num_classes),
+                     dataset_path]
 
         self.generate_image_classification_cnn(responses)
 
+    def choose_hyperparameter_optimization_method(self):
+        print("Select a hyperparameter optimization method:")
+        print("1: Optuna")
+        print("2: Grid Search")
+        print("3: Random Search")
+        print("4: Bayesian Optimization")
+        choice = input("Enter your choice (1-4): ")
 
-    def objective(trial):
+        if choice == '1':
+            def objective_wrapper(trial):
+                return self.objective(trial)  # Ensure this method accepts a trial and operates correctly with it
+
+            study = optuna.create_study(direction='maximize')
+            study.optimize(objective_wrapper, n_trials=10)  # Adjust n_trials as needed
+
+            # Now, you can access the best trial results
+            best_params = study.best_trial.params
+            print("Best hyperparameters found:", best_params)
+        elif choice == '2':
+            self.setup_grid_search()
+        elif choice == '3':
+            self.setup_random_search()
+        elif choice == '4':
+            self.setup_bayesian_optimization()
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+    def setup_grid_search(self):
+        # Define or prompt for search spaces
+        # Implement the method for grid search
+        print("Grid Search setup is not implemented yet.")
+
+    def setup_random_search(self):
+        # Define or prompt for search spaces
+        # Implement the method for random search
+        print("Random Search setup is not implemented yet.")
+
+    def setup_bayesian_optimization(self):
+        # Define or prompt for search spaces
+        # Implement the method for Bayesian Optimization
+        print("Bayesian Optimization setup is not implemented yet.")
+
+    def objective(self, trial):
         # Example: Define hyperparameters using trial suggestions
-        image_size = trial.suggest_categorical('image_size', [64, 128, 256])
+        # image_size = trial.suggest_categorical('image_size', [32, 64, 128, 256])
+        image_size = 32  # Fixed size for CIFAR-10 images
         filters = trial.suggest_categorical('filters', [16, 32, 64])
         dropout_rate = trial.suggest_uniform('dropout_rate', 0.0, 0.5)
         learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-1)
         NUM_CLASSES = 10  # Example, adjust based on your dataset
+
         # Assuming X and y are your full dataset and labels
 
         # Ask the user for the dataset path
@@ -90,6 +132,7 @@ class CodingAssistant:
 
         # Normalize pixel values to be between 0 and 1
         X, X_test = X / 255.0, X_test / 255.0
+
 
         X_train_full, X_test, y_train_full, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=0.25,
@@ -116,15 +159,6 @@ class CodingAssistant:
         val_loss, val_accuracy = model.evaluate(X_val, y_val, verbose=0)
         return val_accuracy
 
-
-
-    if __name__ == "__main__":
-        study = optuna.create_study(direction='maximize')
-        study.optimize(objective, n_trials=100)  # Adjust n_trials as needed
-
-        print("Best hyperparameters:", study.best_trial.params)
-        print("\n \n you can now customise your image classification model based on these parameters " )
-
     def adjust_conv_layers_based_on_image_size(self, image_size):
         # This is a simplistic approach; you might want to use more sophisticated logic
         layers = []
@@ -142,14 +176,15 @@ class CodingAssistant:
             layers.append({'filters': 32, 'kernel_size': (3, 3)})
         return layers
 
-
-
     def generate_image_classification_cnn(self, responses):
         image_size = int(responses[0])  # Assuming the first response is the image size
         suggest_dataset = responses[1].lower()
         use_data_augmentation = responses[2].lower()
-        NUM_CLASSES = int(responses[3]) # number of categories or classes
+        NUM_CLASSES = int(responses[3])  # number of categories or classes
         dataset_path = responses[4]
+        img_size = responses[5]
+        dropout_rate = responses[6]
+        learning_rate = responses[7]
         conv_layers = self.adjust_conv_layers_based_on_image_size(image_size)
 
         data_augmentation_str = """# no selected data augmentation"""
@@ -164,11 +199,13 @@ class CodingAssistant:
             height_shift_range=0.2,
             horizontal_flip=True
         )"""
-        else: data_augmentation_str
+        else:
+            data_augmentation_str
 
         if suggest_dataset == 'y':
             suggest_dataset_str = "#Consider using the CIFAR-10 dataset for a basic image classification task."
-        else: suggest_dataset_str
+        else:
+            suggest_dataset_str
 
         model_layers = []
         for i, layer in enumerate(conv_layers):
@@ -214,14 +251,3 @@ class CodingAssistant:
         with open(filename, 'w') as file:
             file.write(skeleton)
         print(f"\nGenerated code has been saved to {filename}")
-
-    def generate_object_detection_cnn(self):
-        # Define a CNN model for object detection
-        # Add code here for object detection model
-        print("job not finished")
-        return "this aint done yet"
-
-    def generate_facial_recognition_cnn(self):
-        # Define a CNN model for facial recognition
-        # Add code here for facial recognition model
-        return "Facial recognition CNN code generated."
