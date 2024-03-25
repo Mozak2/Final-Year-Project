@@ -69,22 +69,23 @@ class CodingAssistant:
         # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
         # hyperparam_tuning = self.get_valid_input("Would you like your hyperparameters to be tuned? (y/n): ",
         #                                          lambda x: x.lower() in ['y', 'n'])
+        print("Select a CNN architecture:")
+        print("1: ResNet")
+        print("2: VGG")
+        print("3: Basic CNN")
+        print("4: EfficientNet")
+        choice = input("Enter your choice (1-4): ")
 
         hyperparam_tuning = 'y'
         if hyperparam_tuning == 'y':
             hyp_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
                                               "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
                                               lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-            arch_choice = self.get_valid_input("Select a CNN architecture:\n1: ResNet\n2: VGG"
-                                              "\n3: Basic CNN\n4: EfficientNet\nEnter your choice (1-4): ",
-                                              lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-            if arch_choice == '3':
-                basic_cnn = self.get_valid_input("Choose the complexity (high, mid, low): ",
-                        lambda x: True)
-                responses.append(basic_cnn)
+            # arch_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
+            #                                   "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
+            #                                   lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
 
             responses.append(int(hyp_choice))
-            responses.append(int(arch_choice))
 
         best_params = self.choose_hyperparameter_optimization_method(responses)
 
@@ -98,15 +99,15 @@ class CodingAssistant:
                                             "Please enter a valid number.")
             n_trials = int(n_trials)
             return self.setup_optuna(n_trials, responses)
-        elif choice == 2:
+        elif choice == '2':
             return self.setup_grid_search()
-        elif choice == 3:
+        elif choice == '3':
             n_trials = self.get_valid_input("Enter the number of trials for Random Search: ",
                                             lambda x: x.isdigit(),
                                             "Please enter a valid number.")
             n_trials = int(n_trials)
             return self.setup_random_search(responses,n_trials)
-        elif choice == 4:
+        elif choice == '4':
             return self.setup_bayesian_optimization()
         else:
             print("Invalid choice. Please select a valid option.")
@@ -220,14 +221,20 @@ class CodingAssistant:
 
         def is_valid_complexity(complexity):
             return complexity.lower() in ['high', 'mid', 'low']
+        print("Select a CNN architecture:")
+        print("1: ResNet")
+        print("2: VGG")
+        print("3: Basic CNN")
+        print("4: EfficientNet")
+        choice = input("Enter your choice (1-4): ")
 
-        choice = responses[5]
         if is_valid_choice(choice):
-            if choice == 1:
+            if choice == '1':
+
                 return self.build_resnet(responses)
-            elif choice == 2:
+            elif choice == '2':
                 return self.build_vgg(responses)
-            elif choice == 3:
+            elif choice == '3':
                 while True:
                     while True:
                         complexity = input("Choose the complexity (high, mid, low): ").lower()
@@ -235,7 +242,7 @@ class CodingAssistant:
                             return self.generate_cnn_architecture(responses, complexity)
                         else:
                             print("Invalid complexity. Please choose 'high', 'mid', or 'low'.")
-            elif choice == 4:
+            elif choice == '4':
                  return self.build_pretrained_efficientnet(responses)
         else:
             print("Invalid choice. Please select a valid option.")
@@ -275,7 +282,7 @@ class CodingAssistant:
     #
     #     return self.architecture_choice
 
-    def build_vgg(self, responses,filters=64, dropout_rate=0.5):
+    def build_vgg(self, responses):
         # responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), suggest_dataset.lower(),
         #              use_data_augmentation.lower()]
         # Assuming responses[0] contains the image size and your images are RGB
@@ -288,20 +295,18 @@ class CodingAssistant:
             tf.keras.layers.InputLayer(input_shape=input_shape),  # Define the input shape dynamically
 
             # Block 1
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
 
-            # Incorporating dropout rate
-            tf.keras.layers.Dropout(dropout_rate),
             # Block 2
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
 
             # Block 3
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
 
             # Flattening and Dense Layers
