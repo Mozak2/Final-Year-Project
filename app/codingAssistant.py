@@ -1,6 +1,5 @@
 import optuna
 
-from app.questionsRepository import QuestionRepository
 import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB0  # You can choose from B0 to B7
 from tensorflow.keras.models import Model
@@ -19,17 +18,15 @@ from flask import Flask, render_template, request
 
 class CodingAssistant:
     def __init__(self):
-        self.question_repo = QuestionRepository()
         self.architecture_choice = None
         self.complexity_choice = None
 
     def start_interaction(self):
-        general_questions = self.question_repo.get_general_questions()
         print("Please select an option:")
         start = self.get_valid_input("Would you like to get started? (y/n): ",
                                                  lambda x: x.lower() in ['y', 'n'])
         if start == 'y':
-            self.customise_image_classification_param();
+            self.customise_image_classification_param(image_size=32, num_classes=3,rgb_or_grey=3,dataset_path='C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',hyperparam_tuning='y',hyp_choice=1,arch_choice=2,n_trials=3 );
 
 
     def get_valid_input(self, prompt, validation_func, error_message="Invalid answer. Please try again."):
@@ -39,70 +36,100 @@ class CodingAssistant:
                 return user_input
             print(error_message)
 
-    def customise_image_classification_param(self):
+    # def customise_image_classification_param(self):
+    #     basic_temp= 'basic template.py'
+    #     image_size = self.get_valid_input("Enter image size (e.g., 128 for 128x128 pixels): ",
+    #                                           lambda x: x.isdigit() and int(x) > 0)
+    #
+    #     num_classes = self.get_valid_input("How many classes would you like? (e.g., 10): ",
+    #                                        lambda x: x.isdigit() and int(x) > 0)
+    #
+    #     rgb_or_grey = self.get_valid_input("Do you want to use rgb or greyscale? (rgb = 3 / greyscale = 1) ",
+    #                                        lambda x: x.isdigit() and int(x) in [1, 3])
+    #
+    #     # Prompt user for the path to their dataset
+    #     dataset_path = self.get_valid_input(
+    #         "Enter the path to your dataset or leave blank if not applicable): ",
+    #         lambda x: True)  # Validation allows any input, including blank for flexibility
+    #
+    #     responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey),0]
+    #
+    #     # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
+    #     # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
+    #     hyperparam_tuning = self.get_valid_input("Would you like your hyperparameters to be tuned? (y/n): ",
+    #                                              lambda x: x.lower() in ['y', 'n'])
+    #
+    #     # hyperparam_tuning = 'y'
+    #     if hyperparam_tuning == 'y':
+    #         hyp_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
+    #                                           "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
+    #                                           lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
+    #         # responses.append(int(hyp_choice))
+    #         responses[4] = int(hyp_choice)
+    #
+    #
+    #     arch_choice = self.get_valid_input("Select a CNN architecture:\n1: ResNet\n2: VGG16"
+    #                                        "\n3: leNet\n4: alexNet\nEnter your choice (1-4): ",
+    #                                        lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
+    #     responses.append(int(arch_choice))
+    #
+    #     best_params = self.choose_hyperparameter_optimization_method(responses)
+    #
+    #     if arch_choice == '1':
+    #         self.export_basic_resNet_script(responses, best_params, basic_temp)
+    #     if arch_choice == '2':
+    #         self.export_basic_vgg16_script(responses, best_params, basic_temp)
+    #     if arch_choice == '3':
+    #         self.export_basic_leNet_Script(responses, best_params, basic_temp)
+    #     if arch_choice == '4':
+    #         self.export_basic_alexNet_Script(responses, best_params, basic_temp)
+    def customise_image_classification_param(self, image_size, num_classes, rgb_or_grey, dataset_path, hyperparam_tuning, hyp_choice, arch_choice, n_trials):
         basic_temp= 'basic template.py'
-        # hyperparam_tuning = 0
-        # image_size = self.get_valid_input("Enter image size (e.g., 128 for 128x128 pixels): ",
-        #                                       lambda x: x.isdigit() and int(x) > 0)
-        #
-        # num_classes = self.get_valid_input("How many classes would you like? (e.g., 10): ",
-        #                                    lambda x: x.isdigit() and int(x) > 0)
-        #
-        # rgb_or_grey = self.get_valid_input("Do you want to use rgb or greyscale? (rgb = 3 / greyscale = 1) ",
-        #                                    lambda x: x.isdigit() and int(x) in [1, 3])
-        #
-        # #  suggest_dataset = self.get_valid_input("Do you need a suggestion for a dataset? (y/n): ",
-        # #                                        lambda x: x.lower() in ['y', 'n'])
-        # #
-        # # use_data_augmentation = self.get_valid_input("Would you like to use data augmentation? (y/n): ",
-        # #                                              lambda x: x.lower() in ['y', 'n'])
-        #
-        #
-        # # Prompt user for the path to their dataset
-        # dataset_path = self.get_valid_input(
-        #     "Enter the path to your dataset or leave blank if not applicable): ",
-        #     lambda x: True)  # Validation allows any input, including blank for flexibility
+        try:
+            responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey),int(hyp_choice), int(arch_choice), int(n_trials)]
+            # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3,1,2]
+            print("_________________ inside customise_image_classification_param ____________________ ")
+            # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
+            # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
 
-        # responses = [int(image_size), int(num_classes), dataset_path, rgb_or_grey]
+            # responses.append(int(hyp_choice))
+            if hyperparam_tuning.lower() == 'y':
+                best_params = self.choose_hyperparameter_optimization_method(responses, n_trials)
+                print("_________________ supposed to return the best param here ____________________")
+                print(best_params)
+                return best_params
+            else:
+                # Return a message or handle the logic when hyperparameter tuning is not selected
+                return {"message": "Hyperparameter tuning not selected."}
 
-        responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
-        # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
-        # hyperparam_tuning = self.get_valid_input("Would you like your hyperparameters to be tuned? (y/n): ",
-        #                                          lambda x: x.lower() in ['y', 'n'])
+        except ValueError as e:
+            # Handle case where conversion to int fails
+            return {
+                "error": "Invalid input for image size, num classes, rgb_or_grey, hyp_choice, arch_choice, or n_trials. Must be integers."}
 
-        hyperparam_tuning = 'y'
-        if hyperparam_tuning == 'y':
-            hyp_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
-                                              "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
-                                              lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-            arch_choice = self.get_valid_input("Select a CNN architecture:\n1: ResNet\n2: VGG"
-                                               "\n3: Basic CNN\n4: EfficientNet\nEnter your choice (1-4): ",
-                                               lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-            responses.append(int(hyp_choice))
-            responses.append(int(arch_choice))
-
-            if arch_choice == '3':
-                basic_cnn = self.get_valid_input("Choose the complexity (high, mid, low): ",
-                                                 lambda x: True)
-                responses.append(basic_cnn)
+        except Exception as e:
+            # Catch all other exceptions
+            return {"error": f"An error occurred: {str(e)}"}
+    def hello_World(self):
+        print("Hello")
+        return 'hello'
 
 
-        best_params = self.choose_hyperparameter_optimization_method(responses)
-
-        self.export_basic_vgg_script(responses, best_params, basic_temp)
-        # self.generate_image_classification_cnn(responses, best_params)
-
-    def choose_hyperparameter_optimization_method(self, responses):
+    def choose_hyperparameter_optimization_method(self, responses, n_trials):
         choice = responses[4]
+        print("_________________ inside choose_hyperparameter_optimization_method ____________________")
+
         if choice == 1:
+            print("_________________ choice 1 for choose_hyperparameter_optimization_method ____________________")
             train_dataset, val_dataset, _ = self.load_my_dataset(responses)
-            n_trials = self.get_valid_input("Enter the number of trials for Optuna: ",
-                                            lambda x: x.isdigit(),
-                                            "Please enter a valid number.")
+            # n_trials = self.get_valid_input("Enter the number of trials for Optuna: ",
+            #                                 lambda x: x.isdigit(),
+            #                                 "Please enter a valid number.")
             n_trials = int(n_trials)
             return self.setup_optuna(n_trials, responses, train_dataset, val_dataset)
 
         elif choice == 2:
+            print("_________________ choice 2 for choose_hyperparameter_optimization_method ____________________")
             train_dataset, val_dataset, _ = self.load_my_dataset(responses)
             # n_trials = self.get_valid_input("Enter the number of trials for Random Search: ",
             #                                 lambda x: x.isdigit(),
@@ -111,10 +138,11 @@ class CodingAssistant:
             return self.setup_grid_search(responses, train_dataset, val_dataset)
 
         elif choice == 3:
+            print("_________________ choice 3 for choose_hyperparameter_optimization_method ____________________")
             train_dataset, val_dataset, _ = self.load_my_dataset(responses)
-            n_trials = self.get_valid_input("Enter the number of trials for Random Search: ",
-                                            lambda x: x.isdigit(),
-                                            "Please enter a valid number.")
+            # n_trials = self.get_valid_input("Enter the number of trials for Random Search: ",
+            #                                 lambda x: x.isdigit(),
+            #                                 "Please enter a valid number.")
             n_trials = int(n_trials)
             return self.setup_random_search(responses,n_trials, train_dataset, val_dataset)
 
@@ -125,6 +153,7 @@ class CodingAssistant:
             return None
 
     def setup_optuna(self, n_trials, responses, train_dataset, val_dataset):
+        print("_________________ inside setup_optuna ____________________")
         def objective_wrapper(trial):
             return self.objective(trial, responses, train_dataset, val_dataset)  # Ensure this method accepts a trial and operates correctly with it
 
@@ -142,7 +171,7 @@ class CodingAssistant:
         #              use_data_augmentation.lower()]
         # Example: Define hyperparameters using trial suggestions
         # train_dataset, val_dataset, _ = self.load_my_dataset(responses)
-
+        print("_________________ inside objective method ____________________")
         image_size = int(responses[0])
         NUM_CLASSES = int(responses[1])   #adjust based on your dataset
         dataset_path = responses[2]
@@ -243,7 +272,7 @@ class CodingAssistant:
 
 
     def load_my_dataset(self, responses):
-
+        print("_________________ inside load_my_dataset method ____________________")
         # responses = [int(image_size), int(num_classes), dataset_path, rgb_or_grey, suggest_dataset.lower(),
         #              use_data_augmentation.lower()]
         # Assuming dataset_path is structured with /train, /test, and /val subdirectories
@@ -281,6 +310,7 @@ class CodingAssistant:
     from tensorflow.keras import layers, models
 
     def choose_cnn_architecture(self, responses, filters=64, dropout_rate=0.5, learning_rate=1e-3):
+        print("_________________ inside choose_cnn_architecture method ____________________")
         def is_valid_choice(choice):
             return choice in [1, 2, 3, 4]
 
@@ -289,20 +319,18 @@ class CodingAssistant:
         choice = responses[5]
         if is_valid_choice(choice):
             if choice == 1:
-                return self.build_resnet(responses, learning_rate=learning_rate)
+                print("_________________ inside choice 1 in choose_cnn_architecture method ____________________")
+                return self.build_resNet(responses, learning_rate=learning_rate)
             elif choice == 2:
+                print("_________________ inside choice 2 in choose_cnn_architecture method ____________________")
                 return self.build_vgg(responses, filters=filters, dropout_rate=dropout_rate, learning_rate=learning_rate)
-            elif choice == 3:
-                # while True:
-                #     while True:
-                        # complexity = input("Choose the complexity (high, mid, low): ").lower()
-                        # if is_valid_complexity(complexity):
 
-                return self.generate_cnn_architecture(responses, responses[6])
-                        # else:
-                        #     print("Invalid complexity. Please choose 'high', 'mid', or 'low'.")
-            elif choice == '4':
-                 return self.build_pretrained_efficientnet(responses, dropout_rate=dropout_rate, learning_rate=learning_rate)
+            elif choice == 3:
+                print("_________________ inside choice 3 in choose_cnn_architecture method ____________________")
+                return self.build_leNet(responses, learning_rate=learning_rate)
+            elif choice == 4:
+                print("_________________ inside choice 4 in choose_cnn_architecture method ____________________")
+                return self.build_alex_net(responses, dropout_rate=dropout_rate, learning_rate=learning_rate)
         else:
             print("Invalid choice. Please select a valid option.")
 
@@ -320,24 +348,32 @@ class CodingAssistant:
             tf.keras.layers.InputLayer(input_shape=input_shape),
 
             # Block 1
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
-
-            # Optional: Dropout layer after max pooling
-            tf.keras.layers.Dropout(dropout_rate),
 
             # Block 2
-            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(dropout_rate),
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=(2, 2)),
 
             # Block 3
-            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(dropout_rate),
+            tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=(2, 2)),
+
+            # Block 4
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=(2, 2)),
+
+            # Block 5
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(512, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=(2, 2)),
 
             # Flattening and Dense Layers
             tf.keras.layers.Flatten(),
@@ -354,6 +390,78 @@ class CodingAssistant:
                       metrics=['accuracy'])
 
         return model
+    def build_alex_net(self, responses, dropout_rate=0.5, learning_rate=1e-3):
+        num_classes = responses[1]
+        img_size = responses[0]
+        channels = responses[3]
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+        model = tf.keras.models.Sequential([
+            # First Convolutional Layer
+            tf.keras.layers.Conv2D(filters=96, kernel_size=(11, 11), strides=(2, 2), activation='relu',
+                                   input_shape=(img_size, img_size, channels), padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=(3, 3), strides=(2, 2)),
+
+            tf.keras.layers.Conv2D(filters=256, kernel_size=(5, 5), activation='relu', padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=(3, 3), strides=(2, 2)),
+
+            # Reducing the number of layers to adapt to smaller image sizes
+            tf.keras.layers.Conv2D(384, (3, 3), activation='relu', padding='same'),
+
+            tf.keras.layers.Flatten(),
+
+            tf.keras.layers.Dense(2048, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            tf.keras.layers.Dense(2048, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            tf.keras.layers.Dense(num_classes, activation='softmax'),
+        ])
+
+        # Compile the model with the specified learning rate
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
+
+    def build_leNet(self, responses, learning_rate=1e-3):
+        num_classes = responses[1]
+        img_size = responses[0]
+        channels = responses[3]
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+        # using lenet architecture
+        model = tf.keras.models.Sequential([
+            # C1: Convolutional layer with 6 filters, each of size 5x5.
+            tf.keras.layers.Conv2D(6, kernel_size=(5, 5), activation='relu',
+                                   input_shape=input_shape, padding="same"),
+            # S2: Subsampling/Pooling layer.
+            tf.keras.layers.AveragePooling2D(),
+
+            # C3: Convolutional layer with 16 filters, each of size 5x5.
+            tf.keras.layers.Conv2D(16, kernel_size=(5, 5), activation='relu'),
+            # S4: Subsampling/Pooling layer.
+            tf.keras.layers.AveragePooling2D(),
+
+            # C5: Fully connected convolutional layer with 120 filters.
+            tf.keras.layers.Conv2D(120, kernel_size=(5, 5), activation='relu'),
+
+            # Flatten the convolutions to feed them into fully connected layers
+            tf.keras.layers.Flatten(),
+
+            # F6: Fully connected layer with 84 units.
+            tf.keras.layers.Dense(84, activation='relu'),
+
+            # Output layer with a unit for each class.
+            tf.keras.layers.Dense(num_classes, activation='softmax')
+        ])
+
+        # Compile the model with the specified learning rate
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
 
     def residual_block(self, x, filters, conv_num=3, stride=1):
         shortcut = x
@@ -368,7 +476,7 @@ class CodingAssistant:
         x = layers.Activation('relu')(x)
         return x
 
-    def build_resnet(self, responses, learning_rate=1e-3):
+    def build_resNet(self, responses, learning_rate=1e-3):
         num_classes = responses[1]
         img_size = responses[0]
         channels = responses[3]  # Directly using the integer value from responses[3] for channels
@@ -395,83 +503,6 @@ class CodingAssistant:
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                       loss='categorical_crossentropy',
                       metrics=['accuracy'])
-
-        return model
-
-    def generate_cnn_architecture(self, responses, dataset_complexity, dropout_rate=0.5, learning_rate=1e-3):
-        # responses = [int(image_size), int(num_classes), dataset_path, rgb_or_grey, suggest_dataset.lower(),
-        #              use_data_augmentation.lower()]
-        img_width = responses[0]
-        img_height = responses[0]
-        num_classes = responses[1]
-        channels = responses[3]
-        model = tf.keras.Sequential()
-
-        # Base number of filters, based on perceived dataset complexity
-        if dataset_complexity == 'low':
-            base_filters = 16
-            conv_blocks = 2
-            dense_units = 64
-        elif dataset_complexity == 'high':
-            base_filters = 64
-            conv_blocks = 4
-            dense_units = 128
-        else:  # medium
-            base_filters = 32
-            conv_blocks = 3
-            dense_units = 128
-
-        # Input layer
-        model.add(tf.keras.layers.InputLayer(input_shape=(img_height, img_width, channels)))
-
-        # Convolutional blocks
-        for i in range(conv_blocks):
-            filters = base_filters * (2 ** i)
-            model.add(tf.keras.layers.Conv2D(filters=filters, kernel_size=(3, 3), activation='relu', padding='same'))
-            model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2)))
-            # Adding dropout after each convolutional block
-            model.add(tf.keras.layers.Dropout(dropout_rate))
-
-        model.add(tf.keras.layers.Flatten())
-
-        # Fully connected layers
-        model.add(tf.keras.layers.Dense(dense_units, activation='relu'))
-        if num_classes > 10:  # Assuming a more complex task requires more capacity
-            model.add(tf.keras.layers.Dense(dense_units // 2, activation='relu'))
-
-        # Output layer
-        model.add(tf.keras.layers.Dense(num_classes, activation='softmax'))
-
-        model.compile(optimizer=Adam(learning_rate=learning_rate), loss='categorical_crossentropy',
-                      metrics=['accuracy'])
-
-        return model
-
-    def build_pretrained_efficientnet(self, responses, dropout_rate=0.5, learning_rate=1e-3):
-        num_classes = int(responses[1])
-        img_size = responses[0]
-        channels = responses[3]  # Directly using the integer value from responses[3] for channels
-        input_shape = (img_size, img_size, channels)
-        # Load the pre-trained EfficientNet model, excluding its top (final) layer
-        base_model = EfficientNetB0(include_top=False, input_shape=input_shape, weights='imagenet')
-
-        # Freeze the layers of the base model to not train them again
-        for layer in base_model.layers:
-            layer.trainable = False
-
-        # Add new top layers for your specific classification problem
-        x = layers.GlobalAveragePooling2D()(base_model.output)
-        x = layers.Dense(1024, activation='relu')(x)
-        # x = layers.Dropout(dropout_rate)(x)  # Adding dropout layer
-        outputs = layers.Dense(num_classes, activation='softmax')(x)
-
-        # Construct the final model
-        model = Model(inputs=base_model.input, outputs=outputs)
-
-        # Compile the model with the specified learning rate
-        # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-        #               loss='categorical_crossentropy',
-        #               metrics=['accuracy'])
 
         return model
 
@@ -568,230 +599,3 @@ class CodingAssistant:
         with open(filename, 'w') as file:
             file.write(skeleton)
         print(f"\nGenerated code has been saved to {filename}")
-
-    def export_basic_vgg_script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
-        """
-        Generates and exports a Python script for a CNN model.
-
-        Parameters:
-        - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
-        - best_hyperparameters: Dictionary containing the best hyperparameters.
-        - file_name: The name of the Python script to create.
-        """
-        # Extracting values from responses
-        num_classes = responses[1]
-        img_size = responses[0]
-        channels = responses[3]
-        data_setpath = responses[2]
-        input_shape = (img_size, img_size, channels)  # (height, width, channels)
-        # Hyperparameters
-        filters = best_hyperparameters['filters']
-        dropout_rate = best_hyperparameters['dropout_rate']
-        learning_rate = best_hyperparameters['learning_rate']
-
-        # Model script template
-        script_content = f"""\
-import tensorflow as tf
-from tensorflow.keras import layers, models, optimizers
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-# Assuming responses are passed correctly
-dataset_path = '{data_setpath}'
-num_classes = {num_classes}
-img_size = {img_size}
-channels = {channels}
-filters = {filters}
-dropout_rate = {dropout_rate}
-learning_rate = {learning_rate}
-
-class basicModel:
-    def load_dataset(self, dataset_path, img_size):
-        # Example function for loading a dataset
-        train_datagen = ImageDataGenerator(rescale=1. / 255)
-        train_generator = train_datagen.flow_from_directory(
-            dataset_path + '/train',
-            target_size=(img_size, img_size),
-            batch_size=32,  
-            class_mode='categorical')
-
-        validation_datagen = ImageDataGenerator(rescale=1. / 255)
-        validation_generator = validation_datagen.flow_from_directory(
-            dataset_path + '/val',
-            target_size=(img_size, img_size),
-            batch_size=32,
-            class_mode='categorical')
-
-        return train_generator, validation_generator
-
-    def build_model(self,num_classes, img_size, channels , filters=64, dropout_rate=0.5, learning_rate=1e-3):
-
-        # responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), suggest_dataset.lower(),
-        #              use_data_augmentation.lower()]
-        # Assuming responses[0] contains the image size and your images are RGB
-        input_shape = (img_size, img_size, channels)  # (height, width, channels)
-
-        model = tf.keras.models.Sequential([
-            # Input layer
-            tf.keras.layers.InputLayer(input_shape=input_shape),
-
-            # Block 1
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-
-            # Optional: Dropout layer after max pooling
-            tf.keras.layers.Dropout(dropout_rate),
-
-            # Block 2
-            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(dropout_rate),
-
-            # Block 3
-            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(dropout_rate),
-
-            # Flattening and Dense Layers
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(4096, activation='relu'),
-            tf.keras.layers.Dropout(dropout_rate),
-            tf.keras.layers.Dense(4096, activation='relu'),
-            tf.keras.layers.Dropout(dropout_rate),
-            tf.keras.layers.Dense(num_classes, activation='softmax'),
-        ])
-
-        # Compile the model with the dynamic learning rate
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-                      loss='categorical_crossentropy',
-                      metrics=['accuracy'])
-        return model
-
-
-    if __name__ == "__main__":
-        train_generator, validation_generator = load_dataset(dataset_path, img_size)
-        model = build_model(num_classes, img_size, channels, filters, dropout_rate, learning_rate)
-        model.fit(train_generator, validation_data=validation_generator, epochs=10)
-        model.save('trained_model.h5')
-        print("Model training complete and saved.")
-    """
-
-        print("Image Classification CNN Skeleton:\n", script_content)
-
-        # Write the script to a file
-        with open(file_name, "w") as file:
-            file.write(script_content)
-
-        print(f"Custom CNN model script has been saved to {file_name}.")
-
-    def export_basic_resnet_script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
-        """
-        Generates and exports a Python script for a Basic Resnet CNN model to get started.
-
-        Parameters:
-        - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
-        - best_hyperparameters: Dictionary containing the best hyperparameters.
-        - file_name: The name of the Python script to create.
-        """
-        # Extracting values from responses
-        num_classes = responses[1]
-        img_size = responses[0]
-        channels = responses[3]
-        data_setpath = responses[2]
-        input_shape = (img_size, img_size, channels)  # (height, width, channels)
-        # Hyperparameters
-        filters = best_hyperparameters['filters']
-        dropout_rate = best_hyperparameters['dropout_rate']
-        learning_rate = best_hyperparameters['learning_rate']
-
-        # Model script template
-        script_content = f"""\
-import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-# Assuming responses are passed correctly
-dataset_path = '{data_setpath}'
-num_classes = {num_classes}
-img_size = {img_size}
-channels = {channels}
-filters = {filters}
-dropout_rate = {dropout_rate}
-learning_rate = {learning_rate}
-
-class basicModel:
-    def load_dataset(self, dataset_path, img_size):
-        # Example function for loading a dataset
-        train_datagen = ImageDataGenerator(rescale=1. / 255)
-        train_generator = train_datagen.flow_from_directory(
-            dataset_path + '/train',
-            target_size=(img_size, img_size),
-            batch_size=32,  
-            class_mode='categorical')
-
-        validation_datagen = ImageDataGenerator(rescale=1. / 255)
-        validation_generator = validation_datagen.flow_from_directory(
-            dataset_path + '/val',
-            target_size=(img_size, img_size),
-            batch_size=32,
-            class_mode='categorical')
-
-        return train_generator, validation_generator
-    def residual_block(self, x, filters, conv_num=3, stride=1):
-        shortcut = x
-        for i in range(conv_num):
-            x = layers.Conv2D(filters, (3, 3), padding='same', strides=stride if i == 0 else 1)(x)
-            x = layers.BatchNormalization()(x)
-            x = layers.Activation('relu')(x)
-        if stride != 1 or filters != shortcut.shape[-1]:
-            shortcut = layers.Conv2D(filters, (1, 1), strides=stride, padding='same')(shortcut)
-            shortcut = layers.BatchNormalization()(shortcut)
-        x = layers.add([x, shortcut])
-        x = layers.Activation('relu')(x)
-        return x
-
-    def build_model(self,num_classes, img_size, channels, learning_rate=1e-3):
-        input_shape = (img_size, img_size, channels)
-
-        inputs = layers.Input(shape=input_shape)
-        x = layers.Conv2D(64, (7, 7), strides=2, padding='same')(inputs)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-        x = layers.MaxPooling2D((3, 3), strides=2, padding='same')(x)
-
-        # Add residual blocks
-        x = self.residual_block(x, 64, conv_num=3, stride=1)
-        x = self.residual_block(x, 128, conv_num=4, stride=2)
-        x = self.residual_block(x, 256, conv_num=6, stride=2)
-        x = self.residual_block(x, 512, conv_num=3, stride=2)
-
-        x = layers.GlobalAveragePooling2D()(x)
-        outputs = layers.Dense(num_classes, activation='softmax')(x)
-
-        model = models.Model(inputs, outputs)
-
-        # Compile the model
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-                      loss='categorical_crossentropy',
-                      metrics=['accuracy'])
-
-        return model
-
-
-    if __name__ == "__main__":
-        train_generator, validation_generator = load_dataset(dataset_path, img_size)
-        model = build_model(num_classes, img_size, channels, learning_rate)
-        model.fit(train_generator, validation_data=validation_generator, epochs=10)
-        model.save('trained_model.h5')
-        print("Model training complete and saved.")
-    """
-
-        print("Image Classification CNN Skeleton:\n", script_content)
-
-        # Write the script to a file
-        with open(file_name, "w") as file:
-            file.write(script_content)
-
-        print(f"Custom CNN model script has been saved to {file_name}.")

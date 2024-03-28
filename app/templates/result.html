@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customised Code</title>
+    <style>
+        pre {
+            white-space: pre-wrap;       /* Since CSS 2.1 */
+            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+            white-space: pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f4f4f4;
+            max-height: 500px;
+            overflow: auto;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Customised Code</h1>
+
+<!-- Display the script content -->
+<pre id="code">{{ code }}</pre>
+
+<!-- Button to copy the code to the clipboard -->
+<button onclick="copyToClipboard()">Copy Code</button>
+
+<script>
+    function copyToClipboard() {
+        const text = document.getElementById('code').innerText;
+        navigator.clipboard.writeText(text)
+            .then(() => alert('Code copied to clipboard!'))
+            .catch(err => alert('Error in copying text: ', err));
+    }
+</script>
+
+</body>
+</html>

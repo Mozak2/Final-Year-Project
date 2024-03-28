@@ -3,35 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate CNN Code</title>
+    <title>Customize Image Classification Parameters</title>
 </head>
 <body>
-    <h1>Generate CNN Code</h1>
-    <form action="/generate_cnn" method="post">
-        <label for="model_choice">Choose Model Type:</label>
-        <select name="model_choice" id="model_choice">
-            <option value="1">Image Classification</option>
-            <option value="2">Object Detection</option>
-            <option value="3">Facial Recognition</option>
-        </select><br><br>
+    <h2>Customize Image Classification Parameters</h2>
+    <form action="/customize" method="post">
+        <label for="image_size">Enter image size (e.g., 128 for 128x128 pixels):</label><br>
+        <input type="number" id="image_size" name="image_size" required><br>
+        
+        <label for="num_classes">How many classes would you like? (e.g., 10):</label><br>
+        <input type="number" id="num_classes" name="num_classes" required><br>
+        
+        <label for="rgb_or_grey">Do you want to use RGB or Greyscale? (Enter 3 for RGB, 1 for Greyscale):</label><br>
+        <input type="number" id="rgb_or_grey" name="rgb_or_grey" required><br>
+        
+        <label for="dataset_path">Enter the path to your dataset (leave blank if not applicable):</label><br>
+        <input type="text" id="dataset_path" name="dataset_path"><br>
+        
+        <label for="hyperparam_tuning">Would you like your hyperparameters to be tuned? (Enter 'y' for Yes, 'n' for No):</label><br>
+        <input type="text" id="hyperparam_tuning" name="hyperparam_tuning" required><br>
+        
+        <label for="hyp_choice">Select a hyperparameter optimization method (1: Optuna, 2: Grid Search, 3: Random Search, 4: Bayesian Optimization):</label><br>
+        <input type="number" id="hyp_choice" name="hyp_choice" required><br>
+        
+        <label for="arch_choice">Select a CNN architecture (1: ResNet, 2: VGG16, 3: LeNet, 4: AlexNet):</label><br>
+        <input type="number" id="arch_choice" name="arch_choice" required><br>
 
-        <!-- Image Classification Specific Parameters -->
-        <label for="image_size">Image Size (e.g., 128 for 128x128):</label>
-        <input type="text" id="image_size" name="image_size"><br><br>
-
-        <label for="suggest_dataset">Suggest Dataset? (y/n):</label>
-        <input type="text" id="suggest_dataset" name="suggest_dataset"><br><br>
-
-        <label for="use_data_augmentation">Use Data Augmentation? (y/n):</label>
-        <input type="text" id="use_data_augmentation" name="use_data_augmentation"><br><br>
-
-        <label for="num_classes">Number of Classes:</label>
-        <input type="text" id="num_classes" name="num_classes"><br><br>
-
-        <label for="dataset_path">Dataset Path:</label>
-        <input type="text" id="dataset_path" name="dataset_path"><br><br>
-
-        <input type="submit" value="Generate Code">
+        <label for="n_trials">Number of Trials:</label><br>
+        <input type="number" id="n_trials" name="n_trials" required><br>
+        
+        <input type="submit" value="Submit">
     </form>
 </body>
 </html>
