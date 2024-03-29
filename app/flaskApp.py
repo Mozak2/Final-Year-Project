@@ -9,7 +9,7 @@ app = Flask(__name__)
 from codingAssistant import CodingAssistant
 from export_templates import export_code
 coding_assistant = CodingAssistant()
-export_template = export_code()
+# export_template = export_code()
 # A simple route that renders a welcome message
 @app.route('/customize', methods=['GET', 'POST'])
 def customize_model():

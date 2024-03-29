@@ -5,7 +5,7 @@ class export_code:
         self.architecture_choice = None
         self.complexity_choice = None
 
-    def export_basic_vgg16_script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+    def export_basic_vgg16_script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
         """
         Generates and exports a basic vgg16 Python script for a CNN model.
 
@@ -122,7 +122,7 @@ class basicModel:
 
         print(f"Custom CNN model script has been saved to {file_name}.")
 
-    def export_basic_resNet_script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+    def export_basic_resNet_script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
         """
         Generates and exports a Basic resNet Python script for a CNN model to get started.
 
@@ -232,7 +232,7 @@ class basicModel:
 
         print(f"Custom CNN model script has been saved to {file_name}.")
 
-    def export_basic_leNet_Script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+    def export_basic_leNet_Script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
         """
         Generates and exports a basic leNet Python script for a CNN model.
 
@@ -340,7 +340,7 @@ class basicModel:
 
         print(f"Custom CNN model script has been saved to {file_name}.")
 
-    def export_basic_alexNet_Script(self, responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+    def export_basic_alexNet_Script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
         """
         Generates and exports a basic AlexNet Python script for a CNN model.
 

@@ -13,20 +13,22 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import cifar10
 from tensorflow.keras import layers, models
+
 from flask import Flask, render_template, request
 
-
 class CodingAssistant:
+
     def __init__(self):
         self.architecture_choice = None
         self.complexity_choice = None
+        self.best_accuracy = 0
 
     def start_interaction(self):
         print("Please select an option:")
         start = self.get_valid_input("Would you like to get started? (y/n): ",
                                                  lambda x: x.lower() in ['y', 'n'])
         if start == 'y':
-            self.customise_image_classification_param(image_size=32, num_classes=3,rgb_or_grey=3,dataset_path='C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',hyperparam_tuning='y',hyp_choice=1,arch_choice=2,n_trials=3 );
+            self.customise_image_classification_param(image_size=32, num_classes=3,rgb_or_grey=3,dataset_path='C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',hyperparam_tuning='y',hyp_choice=3,arch_choice=2,n_trials=20 );
 
 
     def get_valid_input(self, prompt, validation_func, error_message="Invalid answer. Please try again."):
@@ -76,13 +78,14 @@ class CodingAssistant:
     #     best_params = self.choose_hyperparameter_optimization_method(responses)
     #
     #     if arch_choice == '1':
-    #         self.export_basic_resNet_script(responses, best_params, basic_temp)
+    #         export_code.export_basic_resNet_script(responses, best_params, basic_temp)
     #     if arch_choice == '2':
-    #         self.export_basic_vgg16_script(responses, best_params, basic_temp)
+    #         export_code.export_basic_vgg16_script(responses, best_params, basic_temp)
     #     if arch_choice == '3':
-    #         self.export_basic_leNet_Script(responses, best_params, basic_temp)
+    #         export_code.export_basic_leNet_Script(responses, best_params, basic_temp)
     #     if arch_choice == '4':
-    #         self.export_basic_alexNet_Script(responses, best_params, basic_temp)
+    #         export_code.export_basic_alexNet_Script(responses, best_params, basic_temp)
+
     def customise_image_classification_param(self, image_size, num_classes, rgb_or_grey, dataset_path, hyperparam_tuning, hyp_choice, arch_choice, n_trials):
         basic_temp= 'basic template.py'
         try:
@@ -92,13 +95,24 @@ class CodingAssistant:
             # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
             # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
 
+
             # responses.append(int(hyp_choice))
             if hyperparam_tuning.lower() == 'y':
                 best_params = self.choose_hyperparameter_optimization_method(responses, n_trials)
                 print("_________________ supposed to return the best param here ____________________")
                 print(best_params)
+                # basic_temp = 'basic template.py'
+                # if arch_choice == '1':
+                #     export_code.export_basic_resNet_script(responses, best_params, basic_temp)
+                # if arch_choice == '2':
+                #     export_code.export_basic_vgg16_script(responses, best_params, basic_temp)
+                # if arch_choice == '3':
+                #     export_code.export_basic_leNet_Script(responses, best_params, basic_temp)
+                # if arch_choice == '4':
+                #     export_code.export_basic_alexNet_Script(responses, best_params, basic_temp)
                 return best_params
             else:
+
                 # Return a message or handle the logic when hyperparameter tuning is not selected
                 return {"message": "Hyperparameter tuning not selected."}
 
@@ -187,10 +201,44 @@ class CodingAssistant:
         #               metrics=['accuracy'])
 
         # Fit the model
-        history = model.fit(train_dataset, validation_data=val_dataset, epochs=1, verbose=0)
+        history = model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=0)
         # Assuming X_val and y_val are your validation dataset and labels
         val_loss, val_accuracy = model.evaluate(val_dataset, verbose=0)
+        # if val_accuracy > best_accuracy:
+        #     best_accuracy = val_accuracy
+        #     print(f"New best accuracy: {best_accuracy}")
         return val_accuracy
+
+    # def objective(self, trial, responses, train_dataset, val_dataset):
+    #     # Load and preprocess CIFAR-10 dataset
+    #     (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
+    #     train_images, test_images = train_images / 255.0, test_images / 255.0
+    #     train_labels, test_labels = to_categorical(train_labels, 10), to_categorical(test_labels, 10)
+    #
+    #     # Suggest hyperparameters
+    #     filters = trial.suggest_categorical('filters', [16, 32, 64, 128])
+    #     dropout_rate = trial.suggest_uniform('dropout_rate', 0.0, 0.5)
+    #     learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-1)
+    #
+    #     # Choose CNN architecture based on trial's suggested parameters
+    #     # Here you need to modify choose_cnn_architecture to accept and utilize the suggested parameters
+    #     model = self.choose_cnn_architecture(responses,filters, dropout_rate, learning_rate)
+    #
+    #     # Compile the model
+    #     model.compile(optimizer=Adam(learning_rate=learning_rate), loss='categorical_crossentropy',
+    #                   metrics=['accuracy'])
+    #
+    #     # Fit the model on training data
+    #     history = model.fit(train_images, train_labels, epochs=1, validation_split=0.1, verbose=0)
+    #
+    #     # Evaluate the model on the test set
+    #     _, val_accuracy = model.evaluate(test_images, test_labels, verbose=0)
+    #
+    #     # Optionally, you might want to print the val_accuracy to monitor the optimization process
+    #     print(f"Validation Accuracy: {val_accuracy}")
+    #
+    #     return val_accuracy
+
 
     def setup_grid_search(self, responses, train_dataset, val_dataset):
         # Define the grid of hyperparameters to search through
@@ -214,6 +262,8 @@ class CodingAssistant:
                     # Fit the model and evaluate
                     model.fit(train_dataset, validation_data=val_dataset, epochs=1, verbose=0)
                     val_loss, val_accuracy = model.evaluate(val_dataset, verbose=0)
+                    print(f"Best accuracy: {best_accuracy}")
+                    print(f"Best hyperparameters: {best_hyperparameters}")
 
                     # Update the best hyperparameters if the current trial is better
                     if val_accuracy > best_accuracy:
@@ -249,14 +299,18 @@ class CodingAssistant:
 
 
             # Fit the model and evaluate
-            model.fit(train_dataset, validation_data=val_dataset, epochs=1, verbose=0)
+            model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=0)
             val_loss, val_accuracy = model.evaluate(val_dataset, verbose=0)
+            print(f"Best accuracy: {best_accuracy}")
+            print(f"Best hyperparameters: {best_hyperparameters}")
 
             # Update the best hyperparameters if current trial is better
             if val_accuracy > best_accuracy:
                 best_accuracy = val_accuracy
                 best_hyperparameters = {'filters': filters, 'dropout_rate': dropout_rate,
                                         'learning_rate': learning_rate}
+            print(f"Best accuracy: {best_accuracy}")
+            print(f"Best hyperparameters: {best_hyperparameters}")
 
         print(f"Best accuracy: {best_accuracy}")
         print(f"Best hyperparameters: {best_hyperparameters}")
