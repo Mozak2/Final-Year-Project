@@ -13,9 +13,9 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import cifar10
 from tensorflow.keras import layers, models
-
+from app.export_templates import export_code
+export_template = export_code()
 from flask import Flask, render_template, request
-
 class CodingAssistant:
 
     def __init__(self):
@@ -28,7 +28,9 @@ class CodingAssistant:
         start = self.get_valid_input("Would you like to get started? (y/n): ",
                                                  lambda x: x.lower() in ['y', 'n'])
         if start == 'y':
-            self.customise_image_classification_param(image_size=32, num_classes=3,rgb_or_grey=3,dataset_path='C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',hyperparam_tuning='y',hyp_choice=3,arch_choice=2,n_trials=20 );
+             # self.customise_image_classification_param(image_size=32, num_classes=3,rgb_or_grey=3,dataset_path='C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',hyperparam_tuning='y',hyp_choice=3,arch_choice=3,n_trials=1 );
+             self.customise_image_classification_param();
+
 
 
     def get_valid_input(self, prompt, validation_func, error_message="Invalid answer. Please try again."):
@@ -38,92 +40,94 @@ class CodingAssistant:
                 return user_input
             print(error_message)
 
-    # def customise_image_classification_param(self):
+    def customise_image_classification_param(self):
+        basic_temp= 'basic template.py'
+        image_size = self.get_valid_input("Enter image size (e.g., 128 for 128x128 pixels): ",
+                                              lambda x: x.isdigit() and int(x) > 0)
+
+        n_trials = self.get_valid_input("Enter number of trials: ",
+                                          lambda x: x.isdigit() and int(x) > 0)
+
+        num_classes = self.get_valid_input("How many classes would you like? (e.g., 10): ",
+                                           lambda x: x.isdigit() and int(x) > 0)
+
+        rgb_or_grey = self.get_valid_input("Do you want to use rgb or greyscale? (rgb = 3 / greyscale = 1) ",
+                                           lambda x: x.isdigit() and int(x) in [1, 3])
+
+        # Prompt user for the path to their dataset
+        dataset_path = self.get_valid_input(
+            "Enter the path to your dataset or leave blank if not applicable): ",
+            lambda x: True)  # Validation allows any input, including blank for flexibility
+
+        hyp_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
+                                          "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
+                                          lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
+
+        arch_choice = self.get_valid_input("Select a CNN architecture:\n1: ResNet\n2: VGG16"
+                                           "\n3: leNet\n4: alexNet\nEnter your choice (1-4): ",
+                                           lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
+
+        epochs = self.get_valid_input("how many epochs to run the optimization (e.g., 10): ",
+                                          lambda x: x.isdigit() and int(x) > 0)
+
+        responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), int(hyp_choice), int(arch_choice), int(n_trials), int(epochs)]
+
+        # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
+        # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
+
+        # if hyperparam_tun == 'y':
+        best_params = self.choose_hyperparameter_optimization_method(responses, n_trials)
+        print("_________________ supposed to return the best param here ____________________")
+        print(best_params)
+        # basic_temp = 'basic template.py'
+        if arch_choice == '1':
+            export_template.export_basic_resNet_script(responses, best_params)
+        if arch_choice == '2':
+            export_template.export_basic_vgg16_script(responses, best_params)
+        if arch_choice == '3':
+            export_template.export_basic_leNet_Script(responses, best_params)
+        if arch_choice == '4':
+            export_template.export_basic_alexNet_Script(responses, best_params)
+        return best_params
+
+    # def customise_image_classification_param(self, image_size, num_classes, rgb_or_grey, dataset_path, hyperparam_tuning, hyp_choice, arch_choice, n_trials):
     #     basic_temp= 'basic template.py'
-    #     image_size = self.get_valid_input("Enter image size (e.g., 128 for 128x128 pixels): ",
-    #                                           lambda x: x.isdigit() and int(x) > 0)
-    #
-    #     num_classes = self.get_valid_input("How many classes would you like? (e.g., 10): ",
-    #                                        lambda x: x.isdigit() and int(x) > 0)
-    #
-    #     rgb_or_grey = self.get_valid_input("Do you want to use rgb or greyscale? (rgb = 3 / greyscale = 1) ",
-    #                                        lambda x: x.isdigit() and int(x) in [1, 3])
-    #
-    #     # Prompt user for the path to their dataset
-    #     dataset_path = self.get_valid_input(
-    #         "Enter the path to your dataset or leave blank if not applicable): ",
-    #         lambda x: True)  # Validation allows any input, including blank for flexibility
-    #
-    #     responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey),0]
-    #
+    #     # try:
+    #     responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey),int(hyp_choice), int(arch_choice), int(n_trials)]
+    #     # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3,1,2]
+    #     print("_________________ inside customise_image_classification_param ____________________ ")
     #     # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
     #     # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
-    #     hyperparam_tuning = self.get_valid_input("Would you like your hyperparameters to be tuned? (y/n): ",
-    #                                              lambda x: x.lower() in ['y', 'n'])
-    #
-    #     # hyperparam_tuning = 'y'
-    #     if hyperparam_tuning == 'y':
-    #         hyp_choice = self.get_valid_input("Select a hyperparameter optimization method:\n1: Optuna\n2: Grid Search"
-    #                                           "\n3: Random Search\n4: Bayesian Optimization\nEnter your choice (1-4): ",
-    #                                           lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-    #         # responses.append(int(hyp_choice))
-    #         responses[4] = int(hyp_choice)
     #
     #
-    #     arch_choice = self.get_valid_input("Select a CNN architecture:\n1: ResNet\n2: VGG16"
-    #                                        "\n3: leNet\n4: alexNet\nEnter your choice (1-4): ",
-    #                                        lambda x: x.isdigit() and int(x) in [1, 2, 3, 4])
-    #     responses.append(int(arch_choice))
+    #     # responses.append(int(hyp_choice))
+    #     if hyperparam_tuning.lower() == 'y':
+    #         best_params = self.choose_hyperparameter_optimization_method(responses, n_trials)
+    #         print("_________________ supposed to return the best param here ____________________")
+    #         print(best_params)
+    #         # basic_temp = 'basic template.py'
+    #         if arch_choice == 1:
+    #             export_template.export_basic_resNet_script(responses, best_params)
+    #         if arch_choice == 2:
+    #             export_template.export_basic_vgg16_script(responses, best_params)
+    #         if arch_choice == 3:
+    #             export_template.export_basic_leNet_Script(responses, best_params)
+    #         if arch_choice == 4:
+    #             export_template.export_basic_alexNet_Script(responses, best_params)
+    #         return best_params
+    #     else:
     #
-    #     best_params = self.choose_hyperparameter_optimization_method(responses)
-    #
-    #     if arch_choice == '1':
-    #         export_code.export_basic_resNet_script(responses, best_params, basic_temp)
-    #     if arch_choice == '2':
-    #         export_code.export_basic_vgg16_script(responses, best_params, basic_temp)
-    #     if arch_choice == '3':
-    #         export_code.export_basic_leNet_Script(responses, best_params, basic_temp)
-    #     if arch_choice == '4':
-    #         export_code.export_basic_alexNet_Script(responses, best_params, basic_temp)
-
-    def customise_image_classification_param(self, image_size, num_classes, rgb_or_grey, dataset_path, hyperparam_tuning, hyp_choice, arch_choice, n_trials):
-        basic_temp= 'basic template.py'
-        try:
-            responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey),int(hyp_choice), int(arch_choice), int(n_trials)]
-            # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3,1,2]
-            print("_________________ inside customise_image_classification_param ____________________ ")
-            # responses = [32, 3, 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)',3]
-            # C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)
-
-
-            # responses.append(int(hyp_choice))
-            if hyperparam_tuning.lower() == 'y':
-                best_params = self.choose_hyperparameter_optimization_method(responses, n_trials)
-                print("_________________ supposed to return the best param here ____________________")
-                print(best_params)
-                # basic_temp = 'basic template.py'
-                # if arch_choice == '1':
-                #     export_code.export_basic_resNet_script(responses, best_params, basic_temp)
-                # if arch_choice == '2':
-                #     export_code.export_basic_vgg16_script(responses, best_params, basic_temp)
-                # if arch_choice == '3':
-                #     export_code.export_basic_leNet_Script(responses, best_params, basic_temp)
-                # if arch_choice == '4':
-                #     export_code.export_basic_alexNet_Script(responses, best_params, basic_temp)
-                return best_params
-            else:
-
-                # Return a message or handle the logic when hyperparameter tuning is not selected
-                return {"message": "Hyperparameter tuning not selected."}
-
-        except ValueError as e:
-            # Handle case where conversion to int fails
-            return {
-                "error": "Invalid input for image size, num classes, rgb_or_grey, hyp_choice, arch_choice, or n_trials. Must be integers."}
-
-        except Exception as e:
-            # Catch all other exceptions
-            return {"error": f"An error occurred: {str(e)}"}
+    #         # Return a message or handle the logic when hyperparameter tuning is not selected
+    #         return {"message": "Hyperparameter tuning not selected."}
+        #
+        # except ValueError as e:
+        #     # Handle case where conversion to int fails
+        #     return {
+        #         "error": "Invalid input for image size, num classes, rgb_or_grey, hyp_choice, arch_choice, or n_trials. Must be integers."}
+        #
+        # except Exception as e:
+        #     # Catch all other exceptions
+        #     return {"error": f"An error occurred: {str(e)}"}
     def hello_World(self):
         print("Hello")
         return 'hello'
@@ -201,7 +205,7 @@ class CodingAssistant:
         #               metrics=['accuracy'])
 
         # Fit the model
-        history = model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=0)
+        history = model.fit(train_dataset, validation_data=val_dataset, epochs=1, verbose=0)
         # Assuming X_val and y_val are your validation dataset and labels
         val_loss, val_accuracy = model.evaluate(val_dataset, verbose=0)
         # if val_accuracy > best_accuracy:
@@ -299,18 +303,18 @@ class CodingAssistant:
 
 
             # Fit the model and evaluate
-            model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=0)
+            model.fit(train_dataset, validation_data=val_dataset, epochs=1, verbose=0)
             val_loss, val_accuracy = model.evaluate(val_dataset, verbose=0)
-            print(f"Best accuracy: {best_accuracy}")
-            print(f"Best hyperparameters: {best_hyperparameters}")
+            print(f"current accuracy: {best_accuracy}")
+            print(f"current hyperparameters: {best_hyperparameters}")
 
             # Update the best hyperparameters if current trial is better
             if val_accuracy > best_accuracy:
                 best_accuracy = val_accuracy
                 best_hyperparameters = {'filters': filters, 'dropout_rate': dropout_rate,
                                         'learning_rate': learning_rate}
-            print(f"Best accuracy: {best_accuracy}")
-            print(f"Best hyperparameters: {best_hyperparameters}")
+            # print(f"Best accuracy: {best_accuracy}")
+            # print(f"Best hyperparameters: {best_hyperparameters}")
 
         print(f"Best accuracy: {best_accuracy}")
         print(f"Best hyperparameters: {best_hyperparameters}")
@@ -653,3 +657,548 @@ class CodingAssistant:
         with open(filename, 'w') as file:
             file.write(skeleton)
         print(f"\nGenerated code has been saved to {filename}")
+    def export_basic_vgg16_script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+        """
+        Generates and exports a basic vgg16 Python script for a CNN model.
+
+        Parameters:
+        - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
+        - best_hyperparameters: Dictionary containing the best hyperparameters.
+        - file_name: The name of the Python script to create.
+        """
+        # Extracting values from responses
+        num_classes = responses[1]
+        img_size = responses[0]
+        channels = responses[3]
+        data_setpath = responses[2]
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+        # Hyperparameters
+        filters = best_hyperparameters['filters']
+        dropout_rate = best_hyperparameters['dropout_rate']
+        learning_rate = best_hyperparameters['learning_rate']
+
+        # Model script template
+        script_content = f"""\
+import tensorflow as tf
+from tensorflow.keras import layers, models, optimizers
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Assuming responses are passed correctly
+dataset_path = '{data_setpath}'
+num_classes = {num_classes}
+img_size = {img_size}
+channels = {channels}
+filters = {filters}
+dropout_rate = {dropout_rate}
+learning_rate = {learning_rate}
+
+class basicModel:
+    def load_dataset(self, dataset_path, img_size):
+        # Example function for loading a dataset
+        train_datagen = ImageDataGenerator(rescale=1. / 255)
+        train_generator = train_datagen.flow_from_directory(
+            dataset_path + '/train',
+            target_size=(img_size, img_size),
+            batch_size=32,  
+            class_mode='categorical')
+
+        validation_datagen = ImageDataGenerator(rescale=1. / 255)
+        validation_generator = validation_datagen.flow_from_directory(
+            dataset_path + '/val',
+            target_size=(img_size, img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        return train_generator, validation_generator
+
+    def build_VGG16_model(self,num_classes, img_size, channels , filters=64, dropout_rate=0.5, learning_rate=1e-3):
+
+        # responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), suggest_dataset.lower(),
+        #              use_data_augmentation.lower()]
+        # Assuming responses[0] contains the image size and your images are RGB
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+
+        model = tf.keras.models.Sequential([
+            # Input layer
+            tf.keras.layers.InputLayer(input_shape=input_shape),
+
+            # Block 1
+            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(filters, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2)),
+
+            # Optional: Dropout layer after max pooling
+            tf.keras.layers.Dropout(dropout_rate),
+
+            # Block 2
+            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(filters * 2, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2)),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            # Block 3
+            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.Conv2D(filters * 4, (3, 3), activation='relu', padding='same'),
+            tf.keras.layers.MaxPooling2D((2, 2)),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            # Flattening and Dense Layers
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(4096, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+            tf.keras.layers.Dense(4096, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+            tf.keras.layers.Dense(num_classes, activation='softmax'),
+        ])
+
+        # Compile the model with the dynamic learning rate
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
+
+
+    if __name__ == "__main__":
+        train_generator, validation_generator = load_dataset(dataset_path, img_size)
+        model = build_VGG16_model(num_classes, img_size, channels, filters, dropout_rate, learning_rate)
+        model.fit(train_generator, validation_data=validation_generator, epochs=10)
+        model.save('trained_model.h5')
+        print("Model training complete and saved.")
+    """
+
+        print("Image Classification CNN Skeleton:\n", script_content)
+
+        # Write the script to a file
+        with open(file_name, "w") as file:
+            file.write(script_content)
+
+        print(f"Custom CNN model script has been saved to {file_name}.")
+
+#     def export_basic_resNet_script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+#         """
+#         Generates and exports a Basic resNet Python script for a CNN model to get started.
+#
+#         Parameters:
+#         - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
+#         - best_hyperparameters: Dictionary containing the best hyperparameters.
+#         - file_name: The name of the Python script to create.
+#         """
+#         # Extracting values from responses
+#         num_classes = responses[1]
+#         img_size = responses[0]
+#         channels = responses[3]
+#         data_setpath = responses[2]
+#         input_shape = (img_size, img_size, channels)  # (height, width, channels)
+#         # Hyperparameters
+#         filters = best_hyperparameters['filters']
+#         dropout_rate = best_hyperparameters['dropout_rate']
+#         learning_rate = best_hyperparameters['learning_rate']
+#
+#         # Model script template
+#         script_content = f"""\
+# import tensorflow as tf
+# from tensorflow.keras import layers, models
+# from tensorflow.keras.preprocessing.image import ImageDataGenerator
+#
+# # Assuming responses are passed correctly
+# dataset_path = '{data_setpath}'
+# num_classes = {num_classes}
+# img_size = {img_size}
+# channels = {channels}
+# filters = {filters}
+# dropout_rate = {dropout_rate}
+# learning_rate = {learning_rate}
+#
+# class basicModel:
+#     def load_dataset(self, dataset_path, img_size):
+#         # Example function for loading a dataset
+#         train_datagen = ImageDataGenerator(rescale=1. / 255)
+#         train_generator = train_datagen.flow_from_directory(
+#             dataset_path + '/train',
+#             target_size=(img_size, img_size),
+#             batch_size=32,
+#             class_mode='categorical')
+#
+#         validation_datagen = ImageDataGenerator(rescale=1. / 255)
+#         validation_generator = validation_datagen.flow_from_directory(
+#             dataset_path + '/val',
+#             target_size=(img_size, img_size),
+#             batch_size=32,
+#             class_mode='categorical')
+#
+#         return train_generator, validation_generator
+#     def residual_block(self, x, filters, conv_num=3, stride=1):
+#         shortcut = x
+#         for i in range(conv_num):
+#             x = layers.Conv2D(filters, (3, 3), padding='same', strides=stride if i == 0 else 1)(x)
+#             x = layers.BatchNormalization()(x)
+#             x = layers.Activation('relu')(x)
+#         if stride != 1 or filters != shortcut.shape[-1]:
+#             shortcut = layers.Conv2D(filters, (1, 1), strides=stride, padding='same')(shortcut)
+#             shortcut = layers.BatchNormalization()(shortcut)
+#         x = layers.add([x, shortcut])
+#         x = layers.Activation('relu')(x)
+#         return x
+#
+#     def build_ResNet_model(self,num_classes, img_size, channels, learning_rate=1e-3):
+#         input_shape = (img_size, img_size, channels)
+#
+#         inputs = layers.Input(shape=input_shape)
+#         x = layers.Conv2D(64, (7, 7), strides=2, padding='same')(inputs)
+#         x = layers.BatchNormalization()(x)
+#         x = layers.Activation('relu')(x)
+#         x = layers.MaxPooling2D((3, 3), strides=2, padding='same')(x)
+#
+#         # Add residual blocks
+#         x = self.residual_block(x, 64, conv_num=3, stride=1)
+#         x = self.residual_block(x, 128, conv_num=4, stride=2)
+#         x = self.residual_block(x, 256, conv_num=6, stride=2)
+#         x = self.residual_block(x, 512, conv_num=3, stride=2)
+#
+#         x = layers.GlobalAveragePooling2D()(x)
+#         outputs = layers.Dense(num_classes, activation='softmax')(x)
+#
+#         model = models.Model(inputs, outputs)
+#
+#         # Compile the model
+#         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+#                       loss='categorical_crossentropy',
+#                       metrics=['accuracy'])
+#
+#         return model
+#
+#
+#     if __name__ == "__main__":
+#         train_generator, validation_generator = load_dataset(dataset_path, img_size)
+#         model = build_ResNet_model(num_classes, img_size, channels, learning_rate)
+#         model.fit(train_generator, validation_data=validation_generator, epochs=10)
+#         model.save('trained_model.h5')
+#         print("Model training complete and saved.")
+#     """
+#
+#         print("Image Classification CNN Skeleton:\n", script_content)
+#
+#         # Write the script to a file
+#         with open(file_name, "w") as file:
+#             file.write(script_content)
+#
+#         print(f"Custom CNN model script has been saved to {file_name}.")
+
+        def export_basic_resNet_script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+            """
+            Generates and exports a Basic resNet Python script for a CNN model to get started.
+
+            Parameters:
+            - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
+            - best_hyperparameters: Dictionary containing the best hyperparameters.
+            - file_name: The name of the Python script to create.
+            """
+            # Extracting values from responses
+            num_classes = responses[1]
+            img_size = responses[0]
+            channels = responses[3]
+            data_setpath = responses[2]
+            input_shape = (img_size, img_size, channels)  # (height, width, channels)
+            # Hyperparameters
+            filters = best_hyperparameters['filters']
+            dropout_rate = best_hyperparameters['dropout_rate']
+            learning_rate = best_hyperparameters['learning_rate']
+
+            # Model script template
+            script_content = f"""\
+    class BasicModel:
+    def __init__(self, {data_setpath}, {num_classes}, {img_size}, {channels}, {dropout_rate}, {learning_rate}):
+        self.dataset_path = dataset_path
+        self.num_classes = num_classes
+        self.img_size = img_size
+        self.channels = channels
+        self.dropout_rate = dropout_rate
+        self.learning_rate = learning_rate
+
+    def load_dataset(self):
+        datagen = ImageDataGenerator(rescale=1. / 255)
+        train_generator = datagen.flow_from_directory(
+            f"{data_setpath}/train",
+            target_size=(self.img_size, self.img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        validation_generator = datagen.flow_from_directory(
+            f"{data_setpath}/validation",
+            target_size=(self.img_size, self.img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        return train_generator, validation_generator
+
+    def residual_block(self, x, filters, conv_num=3, stride=1):
+        shortcut = x
+        for i in range(conv_num):
+            x = layers.Conv2D(filters, (3, 3), padding='same', strides=stride if i == 0 else 1)(x)
+            x = layers.BatchNormalization()(x)
+            x = layers.Activation('relu')(x)
+        if stride != 1 or filters != shortcut.shape[-1]:
+            shortcut = layers.Conv2D(filters, (1, 1), strides=stride, padding='same')(shortcut)
+            shortcut = layers.BatchNormalization()(shortcut)
+        x = layers.add([x, shortcut])
+        x = layers.Activation('relu')(x)
+        return x
+
+    def build_ResNet_model(self):
+        input_shape = (self.img_size, self.img_size, self.channels)
+        inputs = layers.Input(shape=input_shape)
+        x = layers.Conv2D(64, (7, 7), strides=2, padding='same')(inputs)
+        x = layers.BatchNormalization()(x)
+        x = layers.Activation('relu')(x)
+        x = layers.MaxPooling2D((3, 3), strides=2, padding='same')(x)
+
+        # Add residual blocks
+        x = self.residual_block(x, 64, conv_num=3, stride=1)
+        x = self.residual_block(x, 128, conv_num=4, stride=2)
+        x = self.residual_block(x, 256, conv_num=6, stride=2)
+        x = self.residual_block(x, 512, conv_num=3, stride=2)
+
+        x = layers.GlobalAveragePooling2D()(x)
+        outputs = layers.Dense(self.num_classes, activation='softmax')(x)
+
+        model = models.Model(inputs, outputs)
+        model.compile(optimizer=tf.keras.optimizers.Adam(self.learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
+
+def main():
+    dataset_path = 'C:/Users/moiib/PycharmProjects/Final-Year-Project/archive (1)'
+    model = BasicModel(dataset_path)
+    train_generator, validation_generator = model.load_dataset()
+    resnet_model = model.build_ResNet_model()
+    resnet_model.fit(train_generator, validation_data=validation_generator, epochs=10 )
+    resnet_model.save('trained_model.h5')
+    # print("Model training complete &#8203;``【oaicite:0】``&#8203;
+if __name__ == "__main__":
+    main()
+        """
+
+            print("Image Classification CNN Skeleton:\n", script_content)
+
+            # Write the script to a file
+            with open(file_name, "w") as file:
+                file.write(script_content)
+
+            print(f"Custom CNN model script has been saved to {file_name}.")
+
+    def export_basic_leNet_Script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+        """
+        Generates and exports a basic leNet Python script for a CNN model.
+
+        Parameters:
+        - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
+        - best_hyperparameters: Dictionary containing the best hyperparameters.
+        - file_name: The name of the Python script to create.
+        """
+        # Extracting values from responses
+        num_classes = responses[1]
+        img_size = responses[0]
+        channels = responses[3]
+        data_setpath = responses[2]
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+        # Hyperparameters
+        filters = best_hyperparameters['filters']
+        dropout_rate = best_hyperparameters['dropout_rate']
+        learning_rate = best_hyperparameters['learning_rate']
+
+        # Model script template
+        script_content = f"""\
+import tensorflow as tf
+from tensorflow.keras import layers, models, optimizers
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Assuming responses are passed correctly
+dataset_path = '{data_setpath}'
+num_classes = {num_classes}
+img_size = {img_size}
+channels = {channels}
+filters = {filters}
+dropout_rate = {dropout_rate}
+learning_rate = {learning_rate}
+
+
+class basicModel:
+    def load_dataset(self, dataset_path, img_size):
+        # Example function for loading a dataset
+        train_datagen = ImageDataGenerator(rescale=1. / 255)
+        train_generator = train_datagen.flow_from_directory(
+            dataset_path + '/train',
+            target_size=(img_size, img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        validation_datagen = ImageDataGenerator(rescale=1. / 255)
+        validation_generator = validation_datagen.flow_from_directory(
+            dataset_path + '/val',
+            target_size=(img_size, img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        return train_generator, validation_generator
+
+    def build_leNet_model(self, num_classes, img_size, channels, learning_rate=1e-3):
+        # responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), suggest_dataset.lower(),
+        #              use_data_augmentation.lower()]
+        # Assuming responses[0] contains the image size and your images are RGB
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+
+        model = tf.keras.models.Sequential([
+            # C1: Convolutional layer with 6 filters, each of size 5x5.
+            tf.keras.layers.Conv2D(6, kernel_size=(5, 5), activation='relu',
+                                   input_shape=input_shape, padding="same"),
+            # S2: Subsampling/Pooling layer.
+            tf.keras.layers.AveragePooling2D(),
+
+            # C3: Convolutional layer with 16 filters, each of size 5x5.
+            tf.keras.layers.Conv2D(16, kernel_size=(5, 5), activation='relu'),
+            # S4: Subsampling/Pooling layer.
+            tf.keras.layers.AveragePooling2D(),
+
+            # C5: Fully connected convolutional layer with 120 filters.
+            tf.keras.layers.Conv2D(120, kernel_size=(5, 5), activation='relu'),
+
+            # Flatten the convolutions to feed them into fully connected layers
+            tf.keras.layers.Flatten(),
+
+            # F6: Fully connected layer with 84 units.
+            tf.keras.layers.Dense(84, activation='relu'),
+
+            # Output layer with a unit for each class.
+            tf.keras.layers.Dense(num_classes, activation='softmax')
+        ])
+
+        # Compile the model with the dynamic learning rate
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
+
+    if __name__ == "__main__":
+        train_generator, validation_generator = load_dataset(dataset_path, img_size)
+        model = build_leNet_model(num_classes, img_size, channels, learning_rate)
+        model.fit(train_generator, validation_data=validation_generator, epochs=10)
+        model.save('trained_model.h5')
+        print("Model training complete and saved.")
+        """
+
+        print("Image Classification CNN Skeleton:\n", script_content)
+
+        # Write the script to a file
+        with open(file_name, "w") as file:
+            file.write(script_content)
+
+        print(f"Custom CNN model script has been saved to {file_name}.")
+
+    def export_basic_alexNet_Script(responses, best_hyperparameters, file_name="custom_cnn_model.py"):
+        """
+        Generates and exports a basic AlexNet Python script for a CNN model.
+
+        Parameters:
+        - responses: Dictionary containing values for 'num_classes', 'img_size', and 'channels'.
+        - best_hyperparameters: Dictionary containing the best hyperparameters.
+        - file_name: The name of the Python script to create.
+        """
+        # Extracting values from responses
+        num_classes = responses[1]
+        img_size = responses[0]
+        channels = responses[3]
+        data_setpath = responses[2]
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+        # Hyperparameters
+        filters = best_hyperparameters['filters']
+        dropout_rate = best_hyperparameters['dropout_rate']
+        learning_rate = best_hyperparameters['learning_rate']
+
+        # Model script template
+        script_content = f"""\
+import tensorflow as tf
+from tensorflow.keras import layers, models, optimizers
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Assuming responses are passed correctly
+dataset_path = '{data_setpath}'
+num_classes = {num_classes}
+img_size = {img_size}
+channels = {channels}
+filters = {filters}
+dropout_rate = {dropout_rate}
+learning_rate = {learning_rate}
+
+
+class basicModel:
+    def load_dataset(self, dataset_path, img_size):
+        # Example function for loading a dataset
+        train_datagen = ImageDataGenerator(rescale=1. / 255)
+        train_generator = train_datagen.flow_from_directory(
+            dataset_path + '/train',
+            target_size=(img_size, img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        validation_datagen = ImageDataGenerator(rescale=1. / 255)
+        validation_generator = validation_datagen.flow_from_directory(
+            dataset_path + '/val',
+            target_size=(img_size, img_size),
+            batch_size=32,
+            class_mode='categorical')
+
+        return train_generator, validation_generator
+
+    def build_alexNet_model(self, num_classes, img_size, channels, learning_rate=1e-3):
+        # responses = [int(image_size), int(num_classes), dataset_path, int(rgb_or_grey), suggest_dataset.lower(),
+        #              use_data_augmentation.lower()]
+        # Assuming responses[0] contains the image size and your images are RGB
+        input_shape = (img_size, img_size, channels)  # (height, width, channels)
+
+        model = tf.keras.models.Sequential([
+            # First Convolutional Layer
+            tf.keras.layers.Conv2D(filters=96, kernel_size=(11, 11), strides=(2, 2), activation='relu',
+                                   input_shape=(img_size, img_size, channels), padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=(3, 3), strides=(2, 2)),
+
+            tf.keras.layers.Conv2D(filters=256, kernel_size=(5, 5), activation='relu', padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=(3, 3), strides=(2, 2)),
+
+            # Reducing the number of layers to adapt to smaller image sizes
+            tf.keras.layers.Conv2D(384, (3, 3), activation='relu', padding='same'),
+
+            tf.keras.layers.Flatten(),
+
+            tf.keras.layers.Dense(2048, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            tf.keras.layers.Dense(2048, activation='relu'),
+            tf.keras.layers.Dropout(dropout_rate),
+
+            tf.keras.layers.Dense(num_classes, activation='softmax'),
+        ])
+
+        # Compile the model with the dynamic learning rate
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        return model
+
+    if __name__ == "__main__":
+        train_generator, validation_generator = load_dataset(dataset_path, img_size)
+        model = build_alexNet_model(num_classes, img_size, channels, learning_rate)
+        model.fit(train_generator, validation_data=validation_generator, epochs=10)
+        model.save('trained_model.h5')
+        print("Model training complete and saved.")
+        """
+
+        print("Image Classification CNN Skeleton:\n", script_content)
+
+        # Write the script to a file
+        with open(file_name, "w") as file:
+            file.write(script_content)
+
+        print(f"Custom CNN model script has been saved to {file_name}.")

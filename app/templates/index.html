@@ -5,34 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customize Image Classification Parameters</title>
 </head>
-<body>
-    <h2>Customize Image Classification Parameters</h2>
-    <form action="/customize" method="post">
-        <label for="image_size">Enter image size (e.g., 128 for 128x128 pixels):</label><br>
-        <input type="number" id="image_size" name="image_size" required><br>
-        
-        <label for="num_classes">How many classes would you like? (e.g., 10):</label><br>
-        <input type="number" id="num_classes" name="num_classes" required><br>
-        
-        <label for="rgb_or_grey">Do you want to use RGB or Greyscale? (Enter 3 for RGB, 1 for Greyscale):</label><br>
-        <input type="number" id="rgb_or_grey" name="rgb_or_grey" required><br>
-        
-        <label for="dataset_path">Enter the path to your dataset (leave blank if not applicable):</label><br>
-        <input type="text" id="dataset_path" name="dataset_path"><br>
-        
-        <label for="hyperparam_tuning">Would you like your hyperparameters to be tuned? (Enter 'y' for Yes, 'n' for No):</label><br>
-        <input type="text" id="hyperparam_tuning" name="hyperparam_tuning" required><br>
-        
-        <label for="hyp_choice">Select a hyperparameter optimization method (1: Optuna, 2: Grid Search, 3: Random Search, 4: Bayesian Optimization):</label><br>
-        <input type="number" id="hyp_choice" name="hyp_choice" required><br>
-        
-        <label for="arch_choice">Select a CNN architecture (1: ResNet, 2: VGG16, 3: LeNet, 4: AlexNet):</label><br>
-        <input type="number" id="arch_choice" name="arch_choice" required><br>
+<body style="background-color: #f0f0f0;">
+    <table align="center" style="width:100%; height:100%;">
+        <tr>
+            <td style="text-align:center;">
+                <h2 style="margin-bottom: 20px;">Customize Image Classification Parameters</h2>
+                <form action="/customize" method="post" style="display:inline-block; text-align: left;">
+                    <div style="margin-bottom: 15px;">
+                        <label for="image_size">Enter image size (e.g., 128 for 128x128 pixels):</label><br>
+                        <input type="number" id="image_size" name="image_size" required>
+                    </div>
 
-        <label for="n_trials">Number of Trials:</label><br>
-        <input type="number" id="n_trials" name="n_trials" required><br>
-        
-        <input type="submit" value="Submit">
-    </form>
+                    <div style="margin-bottom: 15px;">
+                        <label for="num_classes">How many classes would you like? (e.g., 10):</label><br>
+                        <input type="number" id="num_classes" name="num_classes" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="rgb_or_grey">Do you want to use RGB or Greyscale? (Enter 3 for RGB, 1 for Greyscale):</label><br>
+                        <input type="number" id="rgb_or_grey" name="rgb_or_grey" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="dataset_path">Enter the path to your dataset (leave blank if not applicable):</label><br>
+                        <input type="text" id="dataset_path" name="dataset_path">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="hyperparam_tuning">Would you like your hyperparameters to be tuned? (Enter 'y' for Yes, 'n' for No):</label><br>
+                        <input type="text" id="hyperparam_tuning" name="hyperparam_tuning" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="hyp_choice">Select a hyperparameter optimization method (0: None,  1: Optuna, 2: Grid Search, 3: Random Search):</label><br>
+                        <input type="number" id="hyp_choice" name="hyp_choice" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="arch_choice">Select a CNN architecture (1: ResNet, 2: VGG16, 3: LeNet, 4: AlexNet):</label><br>
+                        <input type="number" id="arch_choice" name="arch_choice" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="n_trials">Number of Trials:</label><br>
+                        <input type="number" id="n_trials" name="n_trials" required>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="n_trials">Number of epochs:</label><br>
+                        <input type="number" id="n_trials" name="n_trials" required>
+                    </div>
+
+                    <div>
+                        <input type="submit" value="Submit" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                    </div>
+                </form>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
